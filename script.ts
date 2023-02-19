@@ -1,8 +1,3 @@
-type directionType = {
-    x: number;
-    y: number;
-};
-
 const initialSpeed = 0.035;
 const acceleration = 0.000001;
 const computerSpeed = 0.2;
@@ -22,8 +17,8 @@ function isCollision(rect1: DOMRect, rect2: DOMRect) {
 
 export class Ball {
     ballElem: Element | null;
-    direction: directionType = { x: 0.75, y: 0.5 };
     speed: number;
+    direction: any;
 
     constructor(ballElem: Element | null) {
         this.ballElem = ballElem;
@@ -66,7 +61,7 @@ export class Ball {
     reset() {
         this.x = 50;
         this.y = 50;
-        this.direction = { x: 0.75, y: 0.5 };
+        this.direction = { x: 0 };
         while (
             Math.abs(this.direction.x) <= 0.2 ||
             Math.abs(this.direction.x) >= 0.9
@@ -100,7 +95,10 @@ export class Ball {
                 const bounceAngle =
                     normalizedRelativeIntersectionY * (Math.PI / 3);
                 this.direction.x =
-                    Math.sign(this.direction.x) * Math.cos(bounceAngle) * -1;
+                    Math.min(0.9, Math.max(0.2, Math.cos(bounceAngle))) *
+                    Math.sign(this.direction.x) *
+                    -1;
+
                 this.direction.y = Math.sin(bounceAngle);
             }
         }
@@ -138,7 +136,7 @@ export class Paddle {
         this.position = 50;
     }
 
-    update(delta: number, ballY: number) {
+    update(ballY: number) {
         this.position += computerSpeed * (ballY - this.position);
     }
 }
@@ -186,7 +184,7 @@ const update = (time: number) => {
         if (playerPaddle.rect() !== undefined && computerPaddle.rect()) {
             ball.update(delta, [playerPaddle.rect(), computerPaddle.rect()]);
         }
-        computerPaddle.update(delta, ball.y);
+        computerPaddle.update(ball.y);
 
         const hue = parseFloat(
             getComputedStyle(document.documentElement).getPropertyValue("--hue")

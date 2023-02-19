@@ -12,7 +12,6 @@ function isCollision(rect1, rect2) {
 }
 var Ball = /** @class */ (function () {
     function Ball(ballElem) {
-        this.direction = { x: 0.75, y: 0.5 };
         this.ballElem = ballElem;
         this.speed = initialSpeed;
         this.reset();
@@ -54,7 +53,7 @@ var Ball = /** @class */ (function () {
     Ball.prototype.reset = function () {
         this.x = 50;
         this.y = 50;
-        this.direction = { x: 0.75, y: 0.5 };
+        this.direction = { x: 0 };
         while (Math.abs(this.direction.x) <= 0.2 ||
             Math.abs(this.direction.x) >= 0.9) {
             var heading = randomNumberBetween(0, 2 * Math.PI);
@@ -79,7 +78,9 @@ var Ball = /** @class */ (function () {
                     (paddles[collisionIndex].height / 2);
                 var bounceAngle = normalizedRelativeIntersectionY * (Math.PI / 3);
                 this.direction.x =
-                    Math.sign(this.direction.x) * Math.cos(bounceAngle) * -1;
+                    Math.min(0.9, Math.max(0.2, Math.cos(bounceAngle))) *
+                        Math.sign(this.direction.x) *
+                        -1;
                 this.direction.y = Math.sin(bounceAngle);
             }
         }
@@ -113,7 +114,7 @@ var Paddle = /** @class */ (function () {
     Paddle.prototype.reset = function () {
         this.position = 50;
     };
-    Paddle.prototype.update = function (delta, ballY) {
+    Paddle.prototype.update = function (ballY) {
         this.position += computerSpeed * (ballY - this.position);
     };
     return Paddle;
@@ -153,7 +154,7 @@ var update = function (time) {
         if (playerPaddle.rect() !== undefined && computerPaddle.rect()) {
             ball.update(delta, [playerPaddle.rect(), computerPaddle.rect()]);
         }
-        computerPaddle.update(delta, ball.y);
+        computerPaddle.update(ball.y);
         var hue = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--hue"));
         document.documentElement.style.setProperty("--hue", "".concat(hue + delta * 0.01));
         if (isLose())
